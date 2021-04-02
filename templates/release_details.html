@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Release Details</title>
+    <style>
+        p {
+            font-size: 10pt;
+        }
+    </style>
+</head>
+<body>
+<h1>{{ object.name }} ({{ object.year }})</h1>
+{% if object.cover.url != None %}
+    <img src="{{ object.cover.url }}" width="250" height="250">
+{% else %}
+    <img src="/media/images/no-image-found.jpg" width="250" height="250">
+{% endif %}
+<p>Artist: {{ release.get_artists|default_if_none:'unknown' }}</p>
+<p>Genre: {{ release.get_genres|default_if_none:'unknown' }}</p>
+<p>ORIGIN: {{ object.origin|default_if_none:'unknown' }}</p>
+<p>TYPE: {{ object.release_type|default_if_none:'unknown' }}</p>
+<p>ISSUE: {{ object.issue|default_if_none:'unknown' }}</p>
+<p>STATUS: {{ object.status|default_if_none:'unknown' }}</p>
+</body>
+</html>

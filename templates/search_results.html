@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <title>Search Results</title>
+    <style>
+        .layer {
+            padding: 20px;
+        }
+    </style>
+    <style>
+        .attributes {
+            font-size: 10pt;
+            padding-bottom: 8pt;
+        }
+
+        a {
+            font-size: 16pt;
+        }
+    </style>
+</head>
+<body>
+<h1>Search Results:</h1>
+<div class="layer">
+    {% if not object_list %}
+        <p>None Found</p>
+    {% else %}
+        {% for release in object_list %}
+            {% if forloop.first %}
+                <div class="row">{% endif %}
+
+        <figure class="col-lg-2 col-md-3 col-sm-4 col-6">
+            <a href="{% url 'release_details' release.pk %}">{{ release.name }}
+                ({{ release.date|default_if_none:'' }})</a>
+            <div>{{ release.get_artists|default_if_none:'' }}</div>
+            <div class="attributes">
+                <small>
+                    {{ release.origin|default_if_none:'' }}
+                    {{ release.release_type|default_if_none:'' }}
+                    {{ release.issue|default_if_none:'' }}
+                    {{ release.status|default_if_none:'' }}
+                </small>
+            </div>
+            {% if release.cover.url != None %}
+                <img src="{{ release.cover.url }}" width="170" height="170">
+            {% else %}
+                <img src="/media/images/no-image-found.jpg" width="170" height="170">
+            {% endif %}
+        </figure>
+
+        {# При сжатии страницы лучше отображать не 6 элементов, а меньше) #}
+        {% if forloop.counter|divisibleby:6 %}
+            </div>
+            <div class="row">
+        {% endif %}
+
+        {% if forloop.last %}
+            </div>
+        {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>
+</body>
+</html>

@@ -1,0 +1,6 @@
+music_site/__pycache__/
+music_database/__pycache__/
+music_database/migrations/
+media/
+.idea/
+accounts/

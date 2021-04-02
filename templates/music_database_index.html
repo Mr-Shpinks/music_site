@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <title>Music Service</title>
+    <style>
+        .layer {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1>Releases</h1>
+<p>Find Release:</p>
+<form action="{% url 'search_results' %}" method="get">
+    <input name="q" type="text" placeholder="Search...">
+</form>
+<h2>Last Added Releases:</h2>
+<div class="layer">
+    {% for release in object_list %}
+        {% if forloop.first %}
+            <div class="row">{% endif %}
+
+    <figure class="col-lg-2 col-md-3 col-sm-4 col-6">
+        {% if release.cover.url != None %}
+            <img src="{{ release.cover.url }}" width="170" height="170" alt="">
+        {% else %}
+            <img src="/media/images/no-image-found.jpg" width="170" height="170" alt="">
+        {% endif %}
+        <figcaption>
+            <a href="{% url 'release_details' release.pk %}">{{ release.name }}
+                ({{ release.year|default_if_none:'' }})</a>
+        </figcaption>
+    </figure>
+
+    {% if forloop.counter|divisibleby:6 %}
+        </div>
+        <div class="row">
+    {% endif %}
+
+    {% if forloop.last %}
+        </div>
+    {% endif %}
+    {% endfor %}
+</div>
+</body>
+</html>
