@@ -4,7 +4,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
     <meta charset="UTF-8">
-    <title>Release Details</title>
+    <title>Artists</title>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -16,7 +16,7 @@
                     <a class="nav-link" aria-current="page" href="{% url 'home' %}">Releases</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'artists' %}">Artists</a>
+                    <a class="nav-link active" href="#">Artists</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'genres' %}">Genres</a>
@@ -42,46 +42,27 @@
 
     </div>
 </nav>
+
 <div class="py-2 px-2">
-    <h3>{{ object.name }} ({{ object.date }})</h3>
-    {% if object.cover.url != None %}
-    <img src="{{ object.cover.url }}" width="250" height="250">
-    {% else %}
-    <img src="/media/images/no_image.png" width="250" height="250">
-    {% endif %}
-
-    <hr/>
-
-    {% if artists|length < 1 %}
-    <h5>Artists: unknown</h5>
-    {% else %}
-    <h5>Artists:</h5>
-    {% for artist in artists %}
-    <a href="{% url 'artist_details' artist.pk %}">{{ artist.name }} <br> </a>
-    {% endfor %}
-    {% endif %}
-    <br>
-
-    {% if genres|length < 1 %}
-    <h5>Genres: unknown</h5>
-    {% else %}
-    <h5>Genres:</h5>
-    {% for genre in genres %}
-    <a href="{% url 'genre_details' genre.pk %}">{{ genre.name }} <br> </a>
-    {% endfor %}
-    {% endif %}
-    <br>
-
-    <h5>Origin: {{ object.origin|default_if_none:'unknown' }}</h5>
-    <h5>Type: {{ object.release_type }}</h5>
-    <h5>Issue: {{ object.issue|default_if_none:'unknown' }}</h5>
-    <h5>Status: {{ object.status }}</h5>
-    <h6>Added by: {{ object.entry_owner }}</h6>
-    {% if object.entry_owner == user %}
-    <form action="{% url 'delete_release' pk=object.id %}" method="post">
-        {% csrf_token %}
-        <input class="btn btn-dark" type="submit" value="Delete release">
+    <form action="{% url 'search_artists' %}" method="get">
+        <label for="nameInput">Name:</label>
+        <input id="nameInput" name="name" type="text" placeholder="artist name">
+        <label for="countryInput">Country:</label>
+        <input id="countryInput" name="country" type="text" placeholder="artist country">
+        <button type="submit" class="btn btn-dark">Search</button>
+        <a type="button" class="btn btn-dark" href="{% url 'artists' %}">Reset</a>
     </form>
+</div>
+
+<hr/>
+
+<div class="layer py-2 px-2">
+    {% if object_list|length < 1 %}
+    No artists
+    {% else %}
+    {% for artist in object_list %}
+    <a href="{% url 'artist_details' artist.pk %}">{{ artist }}</a>
+    {% endfor %}
     {% endif %}
 </div>
 </body>

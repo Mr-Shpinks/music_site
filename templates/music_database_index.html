@@ -1,47 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
     <meta charset="UTF-8">
-    <title>Music Service</title>
-    <style>
-        .layer {
-            padding: 20px;
-        }
-    </style>
+    <title>Music Database</title>
 </head>
 <body>
-<h1>Releases</h1>
-<p>Find Release:</p>
-<form action="{% url 'search_results' %}" method="get">
-    <input name="q" type="text" placeholder="Search...">
-</form>
-<h2>Last Added Releases:</h2>
-<div class="layer">
-    {% for release in object_list %}
-        {% if forloop.first %}
-            <div class="row">{% endif %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Music Database</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="#">Releases</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'artists' %}">Artists</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'genres' %}">Genres</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'charts' %}">Charts</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'countries' %}">Countries</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'labels' %}">Labels</a>
+                </li>
+            </ul>
+        </div>
 
-    <figure class="col-lg-2 col-md-3 col-sm-4 col-6">
-        {% if release.cover.url != None %}
-            <img src="{{ release.cover.url }}" width="170" height="170" alt="">
+        {% if user.is_authenticated %}
+        <a class="pull-right" href="{% url 'profile' %}"> {{ request.user.username }} </a>
+        <a class="btn btn-dark pull-right" href="{% url 'logout' %}" role="button">Sign out</a>
         {% else %}
-            <img src="/media/images/no-image-found.jpg" width="170" height="170" alt="">
+        <a class="btn btn-dark pull-right" href="{% url 'login' %}" role="button">Sign in</a>
         {% endif %}
-        <figcaption>
-            <a href="{% url 'release_details' release.pk %}">{{ release.name }}
-                ({{ release.year|default_if_none:'' }})</a>
-        </figcaption>
-    </figure>
 
-    {% if forloop.counter|divisibleby:6 %}
-        </div>
-        <div class="row">
-    {% endif %}
+    </div>
+</nav>
 
-    {% if forloop.last %}
-        </div>
+<div class="py-2 px-2">
+    <h5>Find releases:</h5>
+    <form action="{% url 'search_results' %}" method="get">
+        <label for="nameInput">Name:</label>
+        <input id="nameInput" name="name" type="text" placeholder="release name">
+        <label for="dateInput">Date:</label>
+        <input id="dateInput" name="date" type="text" placeholder="yyyy-mm-dd">
+        <label for="artistInput">Artist:</label>
+        <input id="artistInput" name="artist" type="text" placeholder="artist name">
+        <label for="genreInput">Genre:</label>
+        <input id="genreInput" name="genre" type="text" placeholder="genre name">
+        <button type="submit" class="btn btn-dark">Search</button>
+    </form>
+</div>
+
+<hr/>
+
+<div class="layer py-2 px-2">
+    <h5>Last added:</h5>
+    {% for release in object_list %}
+    {% if forloop.first %}
+    <div class="row">{% endif %}
+
+        <figure class="col-lg-2 col-md-3 col-sm-4 col-6">
+            {% if release.cover.url != None %}
+            <img src="{{ release.cover.url }}" width="170" height="170" alt="">
+            {% else %}
+            <img src="/media/images/no_image.png" width="170" height="170" alt="">
+            {% endif %}
+            <figcaption>
+                <a href="{% url 'release_details' release.pk %}">{{ release.name }}
+                    ({{ release.date}})</a>
+            </figcaption>
+        </figure>
+
+        {% if forloop.counter|divisibleby:6 %}
+    </div>
+    <div class="row">
+        {% endif %}
+
+        {% if forloop.last %}
+    </div>
     {% endif %}
     {% endfor %}
 </div>
