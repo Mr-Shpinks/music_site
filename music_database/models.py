@@ -1,12 +1,10 @@
 from django.db import models
 from enum import Enum
-from django.db.models import Q
-from django.db.models import F
-from django.db.models.functions import Now
-from django.db.models.functions import Cast
+from django.db.models import Q, F
+from django.db.models.functions import Now, Cast
 from django.db.models.signals import post_delete
-from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from accounts.models import User
 
 
 class IterableEnum(Enum):
@@ -43,12 +41,16 @@ class Artist(models.Model):
     labels = models.ManyToManyField('Label', blank=True, through='LabelsHaveArtists')
     countries = models.ManyToManyField('Country', blank=True)
 
+    entry_owner = models.ForeignKey(User, default=None, on_delete=models.SET_NULL, blank=True, null=True)
+
     def __str__(self):
         return self.name
 
 
 class Genre(models.Model):
     name = models.CharField(max_length=50, unique=True, blank=False, null=False)
+
+    entry_owner = models.ForeignKey(User, default=None, on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -68,6 +70,8 @@ class Release(models.Model):
     artists = models.ManyToManyField(Artist, blank=True)
     genres = models.ManyToManyField(Genre, blank=True)
     charts = models.ManyToManyField('Chart', blank=True, through='ChartsHaveReleases')
+
+    entry_owner = models.ForeignKey(User, default=None, on_delete=models.SET_NULL, blank=True, null=True)
 
     class Meta:
         constraints = [
@@ -90,11 +94,9 @@ class Release(models.Model):
             )
         ]
 
-    def get_artists(self):
-        return ', '.join([str(artist) for artist in self.artists.all()])
-
-    def get_genres(self):
-        return ', '.join([str(genre) for genre in self.genres.all()])
+    @staticmethod
+    def get_queryset():
+        return Release.objects.all()
 
     def __str__(self):
         return self.name
@@ -152,6 +154,9 @@ class ChartsHaveReleases(models.Model):
             ),
         ]
 
+    def get_release_object(self):
+        return Release.objects.get(pk=self.release.id)
+
 
 class LabelsHaveArtists(models.Model):
     label = models.ForeignKey(Label, on_delete=models.CASCADE, null=False)
@@ -168,3 +173,6 @@ class LabelsHaveArtists(models.Model):
                 name='date_from_should_be_equal_or_less_than_date_to'
             )
         ]
+
+    def get_artist_object(self):
+        return Artist.objects.get(pk=self.artist.id)
