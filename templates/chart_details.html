@@ -4,7 +4,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
     <meta charset="UTF-8">
-    <title>Artist Details</title>
+    <title>Chart Details</title>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -45,7 +45,33 @@
 <div class="py-2 px-2">
     <h3>{{ chart }}</h3>
 
+    {% if user is not None %}
     <a class="btn btn-dark" href="{% url 'add_chart_entry' chart.pk %}" role="button">Add Entry</a>
+    {% endif %}
+
+    <div class="py-2 px-2">
+        <form action="{% url 'chart_details' chart.pk %}" method="get">
+            <label for="nameInput">Name:</label>
+            <input id="nameInput" name="release_name" type="text" placeholder="release name">
+
+            <label for="date_fromInput">Date from:</label>
+            <input id="date_fromInput" name="date_from" type="text" placeholder="yyyy-mm-dd">
+
+            <label for="date_toInput">Date to:</label>
+            <input id="date_toInput" name="date_to" type="text" placeholder="yyyy-mm-dd">
+
+            <label for="pos_fromInput">Position from:</label>
+            <input id="pos_fromInput" name="pos_from" type="text" placeholder="position from">
+
+            <label for="pos_toInput">Position to:</label>
+            <input id="pos_toInput" name="pos_to" type="text" placeholder="position to">
+
+            <br>
+            <br>
+            <button type="submit" class="btn btn-dark">Search</button>
+            <a type="button" class="btn btn-dark" href="{% url 'chart_details' chart.pk %}">Reset</a>
+        </form>
+    </div>
 
     <hr/>
 
@@ -58,7 +84,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for entry in entries %}
+        {% for entry in object_list %}
         <tr>
             <td><a href="{% url 'release_details' entry.get_release_object.pk %}">
                 {{ entry.get_release_object.name }}</a></td>
@@ -70,5 +96,28 @@
     </table>
 
 </div>
+
+<div class="pagination justify-content-center">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1&release_name={{request.GET.release_name}}&date_from={{request.GET.date_from}}&date_to={{request.GET.date_to}}&pos_from={{request.GET.pos_from}}&pos_to={{request.GET.pos_to}}">
+                &laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}&release_name={{request.GET.release_name}}&date_from={{request.GET.date_from}}&date_to={{request.GET.date_to}}&pos_from={{request.GET.pos_from}}&pos_to={{request.GET.pos_to}}">
+                previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&release_name={{request.GET.release_name}}&date_from={{request.GET.date_from}}&date_to={{request.GET.date_to}}&pos_from={{request.GET.pos_from}}&pos_to={{request.GET.pos_to}}">
+                next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&release_name={{request.GET.release_name}}&date_from={{request.GET.date_from}}&date_to={{request.GET.date_to}}&pos_from={{request.GET.pos_from}}&pos_to={{request.GET.pos_to}}">
+                last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
 </body>
 </html>

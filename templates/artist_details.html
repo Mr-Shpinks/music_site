@@ -52,7 +52,7 @@
     {% else %}
     <h5>Countries:</h5>
     {% for country in object.countries.all %}
-    <a href="#">{{ country }} <br> </a>
+    <a href="{% url 'country_details' country.pk %}">{{ country.name }} <br> </a>
     {% endfor %}
     {% endif %}
     <br>
@@ -61,8 +61,8 @@
     <h5>Labels: unknown</h5>
     {% else %}
     <h5>Labels:</h5>
-    {% for label in object.labels.all %}
-    <a href="#">{{ label }} <br> </a>
+    {% for label in object.labels.all.distinct %}
+    <a href="{% url 'label_details' label.pk %}">{{ label.name }} <br> </a>
     {% endfor %}
     {% endif %}
     <br>
@@ -79,7 +79,7 @@
     <br>
 
     <h6>Added by: {{ object.entry_owner }}</h6>
-    {% if object.entry_owner == user %}
+    {% if object.entry_owner == user and user is not None %}
     <form action="{% url 'delete_artist' pk=object.id %}" method="post">
         {% csrf_token %}
         <input class="btn btn-dark" type="submit" value="Delete artist">

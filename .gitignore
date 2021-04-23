@@ -2,5 +2,7 @@ music_site/__pycache__/
 music_database/__pycache__/
 music_database/migrations/
 media/
+generator/
 .idea/
-accounts/
+accounts/migrations/
+accounts/__pycache__/

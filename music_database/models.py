@@ -98,6 +98,9 @@ class Release(models.Model):
     def get_queryset():
         return Release.objects.all()
 
+    def get_related_release_object(self):
+        return Release.objects.get(pk=self.related.id) if self.related is not None else None
+
     def __str__(self):
         return self.name
 

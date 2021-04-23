@@ -23,13 +23,13 @@
                     <a class="nav-link" href="{% url 'genres' %}">Genres</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Charts</a>
+                    <a class="nav-link" href="{% url 'charts' %}">Charts</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Countries</a>
+                    <a class="nav-link" href="{% url 'countries' %}">Countries</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Labels</a>
+                    <a class="nav-link" href="{% url 'labels' %}">Labels</a>
                 </li>
             </ul>
         </div>
@@ -45,6 +45,7 @@
 </nav>
 
 <h3>Search Results:</h3>
+<hr/>
 <div class="layer py-2 px-2">
     {% if not object_list %}
     <p>None Found</p>
@@ -54,8 +55,10 @@
     <div class="row">{% endif %}
 
         <figure class="col-lg-2 col-md-3 col-sm-4 col-6">
-            <a href="{% url 'release_details' release.pk %}">{{ release.name }}
-                ({{ release.date}})</a>
+            <div class="text-truncate" style="width: 11rem;">
+                <a href="{% url 'release_details' release.pk %}">{{ release.name }} <br>
+                    ({{ release.date}})</a>
+            </div>
             <div>{{ release.get_artists|default_if_none:'' }}</div>
             <div class="attributes">
                 <small>
@@ -83,5 +86,28 @@
     {% endfor %}
     {% endif %}
 </div>
+
+<div class="pagination justify-content-center">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1&name={{ request.GET.name }}&date={{ request.GET.date }}&artist={{ request.GET.artist }}&genre={{ request.GET.genre }}">
+                &laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}&name={{ request.GET.name }}&date={{ request.GET.date }}&artist={{ request.GET.artist }}&genre={{ request.GET.genre }}">
+                previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&name={{ request.GET.name }}&date={{ request.GET.date }}&artist={{ request.GET.artist }}&genre={{ request.GET.genre }}">
+                next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&name={{ request.GET.name }}&date={{ request.GET.date }}&artist={{ request.GET.artist }}&genre={{ request.GET.genre }}">
+                last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
 </body>
 </html>

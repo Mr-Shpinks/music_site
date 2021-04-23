@@ -45,7 +45,18 @@
 <div class="py-2 px-2">
     <h3>{{ label }}</h3>
 
+    {% if user is not None %}
     <a class="btn btn-dark" href="{% url 'add_label_entry' label.pk %}" role="button">Add Entry</a>
+    {% endif %}
+
+    <div class="py-2 px-2">
+        <form action="{% url 'label_details' label.pk %}" method="get">
+            <label for="nameInput">Name:</label>
+            <input id="nameInput" name="artist_name" type="text" placeholder="artist name">
+            <button type="submit" class="btn btn-dark">Search</button>
+            <a type="button" class="btn btn-dark" href="{% url 'label_details' label.pk %}">Reset</a>
+        </form>
+    </div>
 
     <hr/>
 
@@ -58,7 +69,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for entry in entries %}
+        {% for entry in object_list %}
         <tr>
             <td><a href="{% url 'artist_details' entry.get_artist_object.pk %}">
                 {{ entry.get_artist_object.name }}</a></td>
@@ -70,5 +81,29 @@
     </table>
 
 </div>
+
+<div class="pagination justify-content-center">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1&artist_name={{request.GET.artist_name}}">
+                &laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}&artist_name={{request.GET.artist_name}}">
+                previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&artist_name={{request.GET.artist_name}}">
+                next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&artist_name={{request.GET.artist_name}}">
+                last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
+
 </body>
 </html>

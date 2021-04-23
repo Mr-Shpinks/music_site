@@ -76,8 +76,13 @@
     <h5>Type: {{ object.release_type }}</h5>
     <h5>Issue: {{ object.issue|default_if_none:'unknown' }}</h5>
     <h5>Status: {{ object.status }}</h5>
+    {% if object.get_related_release_object is not None %}
+    <h5>Related release:</h5><a href="{% url 'release_details' object.get_related_release_object.pk %}">
+    {{ object.get_related_release_object.name }}
+    ({{ object.get_related_release_object.date}}) </a> <br> <br>
+    {% endif %}
     <h6>Added by: {{ object.entry_owner }}</h6>
-    {% if object.entry_owner == user %}
+    {% if object.entry_owner == user and user is not None %}
     <form action="{% url 'delete_release' pk=object.id %}" method="post">
         {% csrf_token %}
         <input class="btn btn-dark" type="submit" value="Delete release">

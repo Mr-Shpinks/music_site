@@ -1,22 +1,27 @@
 from django.contrib.postgres.search import SearchVector
-from .models import Release, Artist, Genre, Chart, ChartsHaveReleases, Country, Label, LabelsHaveArtists
+from .models import Release, Artist, Genre, Chart, ChartsHaveReleases, Country, Label, LabelsHaveArtists, Country
 from django.views.generic import ListView, DetailView
 from django.shortcuts import render
 from .forms import ReleaseForm, ArtistForm, GenreForm, ChartsHaveReleasesForm, LabelsHaveArtistsForm
 from django.http import HttpResponseRedirect
 from accounts.models import User
 from django.db.models import Q
+from django.core.paginator import Paginator
+import itertools
+from django.shortcuts import get_object_or_404
 
 
 class HomePageView(ListView):
+    paginate_by = 12
     model = Release
     template_name = 'music_database_index.html'
 
     def get_queryset(self):
-        return Release.objects.all().order_by('-id')[:12]
+        return Release.objects.all().order_by('-id')
 
 
 class ArtistsView(ListView):
+    paginate_by = 50
     model = Artist
     template_name = 'artists.html'
 
@@ -25,6 +30,7 @@ class ArtistsView(ListView):
 
 
 class GenresView(ListView):
+    paginate_by = 50
     model = Genre
     template_name = 'genres.html'
 
@@ -56,7 +62,24 @@ class LabelsView(ListView):
         return Label.objects.all()
 
 
+class SearchAllView(ListView):
+    paginate_by = 50
+    template_name = 'all_search_results.html'
+
+    def get_queryset(self):
+        name = self.request.GET.get('name')
+        releases = Release.objects.filter(name__icontains=name)
+        artists = Artist.objects.filter(name__icontains=name)
+        genres = Genre.objects.filter(name__icontains=name)
+        charts = Chart.objects.filter(name__icontains=name)
+        countries = Country.objects.filter(name__icontains=name)
+        labels = Label.objects.filter(name__icontains=name)
+        query_result = list(itertools.zip_longest(releases, artists, genres, charts, countries, labels))
+        return query_result
+
+
 class SearchGenresView(ListView):
+    paginate_by = 50
     model = Genre
     template_name = 'genres.html'
 
@@ -92,7 +115,10 @@ class ReleaseDetailsView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['user'] = User.objects.get(username=self.request.user)
+        try:
+            context['user'] = User.objects.get(username=self.request.user)
+        except User.DoesNotExist:
+            context['user'] = None
         context['artists'] = Release.objects.get(pk=self.kwargs['pk']).artists.all()
         context['genres'] = Release.objects.get(pk=self.kwargs['pk']).genres.all()
         return context
@@ -104,7 +130,12 @@ class ArtistDetailsView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['user'] = User.objects.get(username=self.request.user)
+
+        try:
+            context['user'] = User.objects.get(username=self.request.user)
+        except User.DoesNotExist:
+            context['user'] = None
+
         context['releases'] = Artist.objects.get(pk=self.kwargs['pk']).release_set.all()
         return context
 
@@ -115,35 +146,92 @@ class GenreDetailsView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['user'] = User.objects.get(username=self.request.user)
+        try:
+            context['user'] = User.objects.get(username=self.request.user)
+        except User.DoesNotExist:
+            context['user'] = None
         releases = Genre.objects.get(pk=self.kwargs['pk']).release_set.all()
         context['releases'] = releases
         return context
 
 
-class ChartDetailsView(DetailView):
-    model = ChartsHaveReleases
+class ChartDetailsView(ListView):
+    paginate_by = 50
     template_name = 'chart_details.html'
+
+    def get_queryset(self):
+        self.chart = get_object_or_404(Chart, pk=self.kwargs['chart'])
+        query_set = ChartsHaveReleases.objects.filter(chart_id=self.chart)
+        release_name = self.request.GET.get('release_name')
+        pos_from = self.request.GET.get('pos_from')
+        pos_to = self.request.GET.get('pos_to')
+        date_from = self.request.GET.get('date_from')
+        date_to = self.request.GET.get('date_to')
+
+        if date_from is not None and date_from != '':
+            query_set = query_set & ChartsHaveReleases.objects.filter(date__gte=date_from)
+
+        if date_to is not None and date_to != '':
+            query_set = query_set & ChartsHaveReleases.objects.filter(date__lte=date_to)
+
+        if pos_from is not None and pos_from != '':
+            query_set = query_set & ChartsHaveReleases.objects.filter(position__lte=pos_from)
+
+        if pos_to is not None and pos_to != '':
+            query_set = query_set & ChartsHaveReleases.objects.filter(position__gte=pos_to)
+
+        if release_name is not None and release_name != '':
+            query_set = query_set & ChartsHaveReleases.objects.filter(chart_id=self.chart).select_related(
+                'release').filter(release__name__icontains=release_name)
+        return query_set
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['entries'] = ChartsHaveReleases.objects.filter(chart_id=self.kwargs['pk'])
-        context['chart'] = Chart.objects.get(pk=self.kwargs['pk'])
+        try:
+            context['user'] = User.objects.get(username=self.request.user)
+        except User.DoesNotExist:
+            context['user'] = None
+        context['chart'] = self.chart
         return context
 
 
-class LabelDetailsView(DetailView):
-    model = LabelsHaveArtists
-    template_name = 'label_details.html'
+class CountryDetailsView(DetailView):
+    model = Country
+    template_name = 'country_details.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['entries'] = LabelsHaveArtists.objects.filter(label_id=self.kwargs['pk'])
-        context['label'] = Label.objects.get(pk=self.kwargs['pk'])
+        artists = Country.objects.get(pk=self.kwargs['pk']).artist_set.all()
+        context['artists'] = artists
+        return context
+
+
+class LabelDetailsView(ListView):
+    paginate_by = 50
+    template_name = 'label_details.html'
+
+    def get_queryset(self):
+        self.label = get_object_or_404(Label, pk=self.kwargs['label'])
+        query_set = LabelsHaveArtists.objects.filter(label_id=self.label)
+        artist_name = self.request.GET.get('artist_name')
+
+        if artist_name is not None and artist_name != '':
+            query_set = query_set & LabelsHaveArtists.objects.filter(label_id=self.label).select_related(
+                'artist').filter(artist__name__icontains=artist_name)
+        return query_set
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            context['user'] = User.objects.get(username=self.request.user)
+        except User.DoesNotExist:
+            context['user'] = None
+        context['label'] = self.label
         return context
 
 
 class SearchResultsView(ListView):
+    paginate_by = 18
     model = Release
     template_name = 'search_results.html'
 
@@ -164,6 +252,7 @@ class SearchResultsView(ListView):
 
 
 class SearchArtistsView(ListView):
+    paginate_by = 50
     model = Artist
     template_name = 'artists.html'
 
@@ -171,7 +260,7 @@ class SearchArtistsView(ListView):
         name = self.request.GET.get('name')
         country = self.request.GET.get('country')
         query_result = Artist.objects.filter(name__icontains=name)
-        if country is not None:
+        if country is not None and country != '':
             query_result = query_result & Artist.objects.filter(countries__name__icontains=country)
         return query_result
 
@@ -183,6 +272,7 @@ def add_release(request):
         if form.is_valid():
             added_object = form.save()
             added_object.entry_owner = user
+            added_object.cover = request.FILES['cover']
             added_object.save()
             return HttpResponseRedirect('/accounts/profile/')
     else:

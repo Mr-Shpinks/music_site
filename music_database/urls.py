@@ -2,10 +2,11 @@ from django.urls import path
 from .views import HomePageView, SearchResultsView, ReleaseDetailsView, add_release, delete_release, SearchArtistsView, \
     ArtistsView, ArtistDetailsView, add_artist, delete_artist, GenresView, SearchGenresView, add_genre, delete_genre, \
     GenreDetailsView, ChartsView, SearchChartsView, ChartDetailsView, add_chart_entry, CountriesView, LabelsView, \
-    LabelDetailsView, SearchLabelsView, add_label_entry
+    LabelDetailsView, SearchLabelsView, add_label_entry, SearchAllView, CountryDetailsView
 
 urlpatterns = [
     path('search/', SearchResultsView.as_view(), name='search_results'),
+    path('search_all/', SearchAllView.as_view(), name='search_all'),
     path('search_artists/', SearchArtistsView.as_view(), name='search_artists'),
     path('search_genres/', SearchGenresView.as_view(), name='search_genres'),
     path('search_charts/', SearchChartsView.as_view(), name='search_charts'),
@@ -19,8 +20,9 @@ urlpatterns = [
     path('releases/<int:pk>/', ReleaseDetailsView.as_view(), name='release_details'),
     path('artists/<int:pk>/', ArtistDetailsView.as_view(), name='artist_details'),
     path('genres/<int:pk>/', GenreDetailsView.as_view(), name='genre_details'),
-    path('charts/<int:pk>/', ChartDetailsView.as_view(), name='chart_details'),
-    path('labels/<int:pk>/', LabelDetailsView.as_view(), name='label_details'),
+    path('charts/<chart>/', ChartDetailsView.as_view(), name='chart_details'),
+    path('countries/<int:pk>/', CountryDetailsView.as_view(), name='country_details'),
+    path('labels/<label>/', LabelDetailsView.as_view(), name='label_details'),
     path('delete_release/<int:pk>/', delete_release, name='delete_release'),
     path('delete_artist/<int:pk>/', delete_artist, name='delete_artist'),
     path('delete_genre/<int:pk>/', delete_genre, name='delete_genre'),

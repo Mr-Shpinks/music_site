@@ -33,6 +33,11 @@
             </ul>
         </div>
 
+        <form action="{% url 'search_all' %}" method="get">
+            <label for="queryInput">Name:</label>
+            <input class="me-5" id="queryInput" name="name" type="text" placeholder="Search all database">
+        </form>
+
         {% if user.is_authenticated %}
         <a class="pull-right" href="{% url 'profile' %}"> {{ request.user.username }} </a>
         <a class="btn btn-dark pull-right" href="{% url 'logout' %}" role="button">Sign out</a>
@@ -61,9 +66,31 @@
     No artists
     {% else %}
     {% for artist in object_list %}
-    <a href="{% url 'artist_details' artist.pk %}">{{ artist }}</a>
+    <a href="{% url 'artist_details' artist.pk %}">{{ artist }}</a> <br>
     {% endfor %}
     {% endif %}
 </div>
+
+<div class="pagination justify-content-center">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1&name={{request.GET.name}}&country={{request.GET.country}}">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}&name={{request.GET.name}}&country={{request.GET.country}}">
+                previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&name={{request.GET.name}}&country={{request.GET.country}}">
+                next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&name={{request.GET.name}}&country={{request.GET.country}}">
+                last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
 </body>
 </html>
